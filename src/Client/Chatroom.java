@@ -1,15 +1,22 @@
 package Client;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 
-/**
- *
- * @author gumula ronewa
- */
-public class Chatroom extends javax.swing.JFrame implements Server.WritableGUI{
-    public Chatroom() {
+public class Chatroom extends javax.swing.JFrame implements WritableGUI{
+    Client client;
+    
+    // initialise variables for file transfer
+    JFileChooser fc = new JFileChooser();
+    java.net.URL img = getClass().getResource("attach.png");
+    ImageIcon icon = new ImageIcon(img);
+    
+    public Chatroom(Client c) {
+        super(c.getName() + "\'s Chat Room");
+        this.client = c;
+        c.setGUI(this); // allows us to write to the GUI
         initComponents();
     }
 
@@ -31,10 +38,6 @@ public class Chatroom extends javax.swing.JFrame implements Server.WritableGUI{
         attachname = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txaChat = new javax.swing.JTextArea();
-        jLabel1 = new javax.swing.JLabel();
-        txtfPort = new javax.swing.JTextField();
-        txfHostName = new javax.swing.JTextField();
-        lblHost = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -61,6 +64,12 @@ public class Chatroom extends javax.swing.JFrame implements Server.WritableGUI{
         });
 
         send.setText("Send");
+        send.setEnabled(false);
+        send.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendActionPerformed(evt);
+            }
+        });
 
         attachname.setText("attachment");
 
@@ -68,16 +77,6 @@ public class Chatroom extends javax.swing.JFrame implements Server.WritableGUI{
         txaChat.setColumns(20);
         txaChat.setRows(5);
         jScrollPane1.setViewportView(txaChat);
-
-        jLabel1.setText("Port:");
-
-        txtfPort.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtfPortActionPerformed(evt);
-            }
-        });
-
-        lblHost.setText("Host:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -100,32 +99,15 @@ public class Chatroom extends javax.swing.JFrame implements Server.WritableGUI{
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(send, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblHost)
-                            .addGap(18, 18, 18)
-                            .addComponent(txfHostName, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(jLabel1)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(txtfPort, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 608, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 608, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 13, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(txtfPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel1)
-                        .addComponent(txfHostName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(lblHost)))
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 345, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -152,11 +134,17 @@ public class Chatroom extends javax.swing.JFrame implements Server.WritableGUI{
     }//GEN-LAST:event_messageFocusGained
 
     private void messageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messageActionPerformed
-        int targetPort = Integer.parseInt(txtfPort.getText());
-        String msg = message.getText();
-        Client client = new Client("default",msg, txfHostName.getText(), targetPort);
-        client.start();
-        message.setText(""); // clear input field
+        if(!(message.getText()).equals("")){
+            try{
+                client.send((message.getText()));
+            } catch(IOException e){
+                System.out.println(e);
+            }
+        }
+        else{
+            System.out.println("null");
+        }
+        message.setText("");        
     }//GEN-LAST:event_messageActionPerformed
 
     private void attachmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachmentActionPerformed
@@ -164,16 +152,26 @@ public class Chatroom extends javax.swing.JFrame implements Server.WritableGUI{
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
+            System.out.println(file.getName());
             //This is where a real application would open the file.
             attachname.setText(file.getName());
+            send.setEnabled(true);
+            
         } else {
             System.out.println("Open command cancelled by user.");
         }
+        
     }//GEN-LAST:event_attachmentActionPerformed
 
-    private void txtfPortActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfPortActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtfPortActionPerformed
+    private void sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendActionPerformed
+        File file = fc.getSelectedFile();
+        client.sendFile(file);
+        fc.cancelSelection();
+        System.out.println(file.getName());
+        send.setEnabled(false);
+        attachname.setText("attachment");
+        
+    }//GEN-LAST:event_sendActionPerformed
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -198,30 +196,18 @@ public class Chatroom extends javax.swing.JFrame implements Server.WritableGUI{
             java.util.logging.Logger.getLogger(Chatroom.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Chatroom().setVisible(true);
-            }
-        });
-    }
-     JFileChooser fc = new JFileChooser();
-     java.net.URL img = getClass().getResource("attach.png");
-     ImageIcon icon = new ImageIcon(img);
+        /* Create and display the form */    
+    };
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton attachment;
     private javax.swing.JLabel attachname;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblHost;
     private javax.swing.JTextField message;
     private javax.swing.JButton send;
     private javax.swing.JTextArea txaChat;
-    private javax.swing.JTextField txfHostName;
-    private javax.swing.JTextField txtfPort;
     // End of variables declaration//GEN-END:variables
     @Override
     public void write(String s){

@@ -1,88 +1,94 @@
 package Server;
+import Client.Client;
+import FTP.FTServer;
+import java.util.*;
+import java.net.*;
+import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.HashSet;
-
-// defines the server in client-server communication
-public class Server extends Thread{
-    int port = 9999; // default port #
+public class Server implements Runnable{
     ServerSocket serverSocket;
-    PrintStream output;
-    HashSet<Socket> clients;
-    // default constructor
-    public Server(){
-        try{
-            serverSocket = new ServerSocket(port);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
-        clients = new HashSet<>(); // creates hash set to store connected clients
-    }
+    HashSet<ServerThread> clients;
+    Thread thread = null;
+    FTServer ftServer;
     /**
     * sets up the server socket to listen to and accept
     * connection requests given a port number
     * @param port The port number to listen on
     */
     public Server(int port){
-        this.port = port;
         try{
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
             System.out.println(e);
         }
-        clients = new HashSet<>(); // creates hash set to store connected clients
-    }
-    
-    public int getPort(){
-        return port;
+        clients = new HashSet<>();
+        ftServer = new FTServer();
+        System.out.println("Moeny");
     }
     
     @Override
-    public void run(){
-        System.out.println("Listening on port: " + port + "...");
-        Socket clientSocket = null;
-        InputStream is;
+    public void run(){ 
+        System.out.println("FTP SERVER");
+        initiateConnection(); 
+    }
+    
+    // a thread that listens for new client connection requests
+    public void start()
+    {
+	if(thread == null)
+	{
+            ftServer.start();
+            thread = new Thread(this);
+            thread.start();
+	}
+    }
+    //start connection
+    public void initiateConnection(){ 
         try{
-            clients.add(clientSocket); //This returns a boolean
-            while((clientSocket = serverSocket.accept()) != null){
-                is = clientSocket.getInputStream();
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                String line = br.readLine();
-                System.out.println(line); // print out message
-                if(line!= null){
-                    if (line.toLowerCase().startsWith("/stopserver")) {
-                        System.exit(0);
-                    }
-                }
-                broadcastMsg(clientSocket, line);
+            while(thread != null){
+                Socket clientSocket = serverSocket.accept();
+                ServerThread st = new ServerThread(this, clientSocket);
+                clients.add(st); // add client thread to set of connected clients
+                st.start();
+                System.out.println("connected...");
             }
-            clients.remove(clientSocket);
-            clientSocket.close();
-        } catch (IOException e){
+        } catch (IOException e){   
             System.out.println(e);
-        } 
+        }   
     }
-    /**
-     * @param s The socket of the connected client
-     * @param msg The message to broadcast
-     */
-    public void broadcastMsg(Socket s, String msg){
-        try {
-            s.getOutputStream().write(msg.getBytes());
-            s.close();
-            System.out.println("Sent message: " + msg);
-        } catch (IOException e) {
-            System.out.println(e);
+
+    // removes a client from the hash set
+    public synchronized void removeclient(ServerThread client)
+    {	
+        clients.remove(client);
+    }
+    
+   // sends a message to all clients
+    public synchronized void sendMsg(String msg){
+        if(msg.contains(Client.SERVERMSG)){
+            int nameEnd = msg.indexOf(Client.FILEIDNAME);
+            String fileName = msg.substring(0, nameEnd).trim();
+            System.out.println(fileName + " Intercepted");
+            try {
+                Socket sendFTSMsg = new Socket("localhost", 5001);
+                DataOutputStream output = new DataOutputStream(sendFTSMsg.getOutputStream());
+                output.writeUTF(fileName + Client.FILEIDNAME);
+            } catch (IOException ex) {
+                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            ftServer.setName(fileName);
+            return;
         }
+        System.out.println("Sending '" + msg + "'");
+        clients.stream().forEach((s) -> { // lambda expression to loop through clients in set
+            s.transmitMsg(msg);
+        });
     }
-    public static void main(String[] args) throws Exception {
-        Server server = new Server();
+    
+    public static void main(String[] args) throws IOException{
+        Server server = new Server(1200);
         server.start();
     }
 }

@@ -1,8 +1,7 @@
 package Client;
-import Server.Server;
 
 public class GUI extends javax.swing.JFrame{
-    Server server;
+   
     String userName, port_number;
 
     public GUI() {
@@ -24,6 +23,8 @@ public class GUI extends javax.swing.JFrame{
         portLabel = new javax.swing.JLabel();
         Enter = new javax.swing.JButton();
         jTextField3 = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        txfHost = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -34,8 +35,9 @@ public class GUI extends javax.swing.JFrame{
         });
 
         UserLabel.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        UserLabel.setText("    Username:");
+        UserLabel.setText("Username:");
 
+        portNumber.setText("1200");
         portNumber.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 portNumberActionPerformed(evt);
@@ -45,7 +47,7 @@ public class GUI extends javax.swing.JFrame{
         portLabel.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         portLabel.setText(" Port Number:");
 
-        Enter.setText("Enter");
+        Enter.setText("Connect");
         Enter.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 EnterActionPerformed(evt);
@@ -54,12 +56,17 @@ public class GUI extends javax.swing.JFrame{
 
         jTextField3.setEditable(false);
         jTextField3.setBackground(new java.awt.Color(51, 153, 255));
-        jTextField3.setText("                                       ChatApp");
+        jTextField3.setText("                                   ChatApp");
         jTextField3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField3ActionPerformed(evt);
             }
         });
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jLabel1.setText("Host name:");
+
+        txfHost.setText("localhost");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -67,20 +74,23 @@ public class GUI extends javax.swing.JFrame{
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(67, 67, 67)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(UserLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(portLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(portNumber)
-                            .addComponent(Username)))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 76, Short.MAX_VALUE)
+                        .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(66, 66, 66)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(Enter, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(jLabel1)
+                            .addComponent(portLabel)
+                            .addComponent(UserLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(Enter, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(portNumber)
+                            .addComponent(Username)
+                            .addComponent(txfHost))))
                 .addGap(57, 57, 57))
         );
         layout.setVerticalGroup(
@@ -91,14 +101,18 @@ public class GUI extends javax.swing.JFrame{
                 .addGap(35, 35, 35)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(UserLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Username, javax.swing.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE))
+                    .addComponent(Username))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(portNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(portLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(txfHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addComponent(Enter, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(88, 88, 88))
+                .addGap(36, 36, 36))
         );
 
         pack();
@@ -115,8 +129,10 @@ public class GUI extends javax.swing.JFrame{
     private void EnterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jEnterActionPerformed
         userName = Username.getText();
         port_number = portNumber.getText();
-        dispose();
-        Chatroom chat = new Chatroom();
+        Client c = new Client(txfHost.getText().trim(), Integer.parseInt(port_number), userName.trim());   
+        c.start();
+        dispose(); // destroys the current GUI
+        Chatroom chat = new Chatroom(c); // instantiates the chatroom screen
         chat.setVisible(true);
     }//GEN-LAST:event_jEnterActionPerformed
 
@@ -164,9 +180,11 @@ public class GUI extends javax.swing.JFrame{
     private javax.swing.JButton Enter;
     private javax.swing.JLabel UserLabel;
     private javax.swing.JTextField Username;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField jTextField3;
     private javax.swing.JLabel portLabel;
     private javax.swing.JTextField portNumber;
+    private javax.swing.JTextField txfHost;
     // End of variables declaration//GEN-END:variables
 
 }
